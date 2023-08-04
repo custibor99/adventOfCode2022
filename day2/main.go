@@ -13,41 +13,45 @@ import (
 // B, Y is PAPER
 // C, Z IS SCISORS
 
-func scoreGame(oponent string, player string) (int, error) {
-	var score int = 0
-	
-	switch player {
-		case "X" : score += 1; 
-		case "Y" : score += 2
-		case "Z" : score += 3
-		default : return 0, errors.New("Invalid player input")
+const(
+	rock 		int = 1
+	paper 		int = 2
+	scissors 	int = 3
+)
+
+var shapeMap = map[string]int {
+	"X": rock,
+	"A": rock,
+	"Y": paper,
+	"B": paper,
+	"Z": scissors,
+	"C": scissors,
+}
+
+func scoreRound(playerShape int, oponentShape int) int {
+	if playerShape == oponentShape {
+		return 3 + playerShape
 	}
-	
-	if oponent != "A" && oponent != "B" && oponent != "C" {
-		return 0, errors.New("Invalid oponent input")
+	if playerShape - oponentShape == -1 || playerShape - oponentShape == 2 {
+		return playerShape
+	}
+	return 6 + playerShape
+}
+
+
+func parseInput(oponent string, player string) (int, int, error) {	
+	playerShape, exists :=shapeMap[player]
+	if (exists == false) {
+		return 0, 0, errors.New("Invalid player input")
 	}
 
-	if player == "X" {
-		if oponent == "A" {
-			score += 3
-		} else if oponent == "C" {
-			score += 6
-		}
-	} else if player == "Y" {
-		if oponent == "A" {
-			score += 6
-		} else if oponent == "B" {
-			score += 3
-		} 
-	} else if player == "Z" {
-		if oponent == "B" {
-			score += 6
-		} else if oponent == "C" {
-			score += 3
-		} 
+	oponentShape, exists :=shapeMap[oponent]
+	if (exists == false) {
+		return 0, 0,  errors.New("Invalid oponent input")
 	}
-	return score, nil
+	return playerShape, oponentShape, nil
 }
+
 
 func main() {
 	var filename string = os.Args[1]
@@ -68,11 +72,12 @@ func main() {
 			log.Fatal("Number of elements in row is off: ", len(elements), " ", elements)
 		}
 
-		gameScore, err := scoreGame(elements[0], elements[1])
+		playerShape, oponentShape, err := parseInput(elements[0], elements[1])
 		if err != nil {
 			log.Fatal(err)
 		}
-		totalScore += gameScore 
+		roundScore := scoreRound(playerShape, oponentShape)
+		totalScore += roundScore 
 	}
 	fmt.Println(totalScore)
 }
